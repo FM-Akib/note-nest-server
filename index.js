@@ -31,6 +31,7 @@ async function run() {
 
 
    const usersCollection = await client.db('iiucResources').collection("users");
+   const courseCollection = await client.db('iiucResources').collection("cseCourse");
 
 
     //users
@@ -50,6 +51,36 @@ async function run() {
       const result = await usersCollection.insertOne(user);
       res.send(result);
     })
+
+    //course Update CSE
+    app.patch('/courses/:courseCode', async (req, res) => {
+      const { courseCode } = req.params;
+      const { contentType, resource } = req.body;
+      console.log(contentType);
+      console.log(resource);
+      console.log(courseCode);
+
+  
+      if (!['Playlist', 'Note', 'questionBank', 'other'].includes(contentType)) {
+          return res.status(400).send({ message: 'Invalid Content Name' });
+      }
+  
+      try {
+          const filter = { courseCode };
+          const update = { $push: { [contentType]: resource } };
+          const result = await courseCollection.updateOne(filter, update);
+  
+          if (result.matchedCount === 0) {
+              return res.status(404).send({ message: 'Course not found' });
+          }
+  
+          const updatedCourse = await courseCollection.findOne(filter);
+          res.send({ message: 'Resource added successfully', course: updatedCourse });
+      } catch (err) {
+          res.status(500).send({ message: 'Internal server error', error: err });
+      }
+  });
+  
    
 
 
