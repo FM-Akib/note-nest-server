@@ -68,7 +68,7 @@ async function run() {
           const filter = { email };
           const update = { $push: { ["myContribution"]: resource } };
           const result = await usersCollection.updateOne(filter, update);
-          console.log(result)
+          // console.log(result)
           if (result.matchedCount === 0) {
               return res.status(404).send({ message: 'user not found' });
           }
@@ -80,6 +80,48 @@ async function run() {
       }
   });
   
+  app.patch('/users/bookmark/:email', async (req, res) => {
+    const { email } = req.params;
+    const {  resource } = req.body;
+     
+
+    try {
+        const filter = { email };
+        const update = { $push: { ["bookmarked"]: resource } };
+        const result = await usersCollection.updateOne(filter, update);
+        // console.log(result)
+        if (result.matchedCount === 0) {
+            return res.status(404).send({ message: 'user not found' });
+        }
+
+        
+        res.send({ message: 'Bookmarked successfully', result });
+    } catch (err) {
+        res.status(500).send({ message: 'Internal server error', error: err });
+    }
+});
+
+
+//toooodoooooooooo: Problem -----------------------------------
+
+app.delete('/users/bookmark/:email', async (req, res) => {
+  const { email } = req.params;
+  const { resourceId } = req.body; // Assuming you have a unique identifier for the resource
+
+  try {
+      const filter = { email };
+      const update = { $pull: { bookmarked: { id: resourceId } } }; // Remove the matching bookmark
+      const result = await usersCollection.deleteOne(filter, update);
+
+      // if (result.matchedCount === 0) {
+      //     return res.status(404).send({ message: 'User not found' });
+      // }
+
+      // res.send({ message: 'Resource deleted from bookmarks successfully', result });
+  } catch (err) {
+      res.status(500).send({ message: 'Internal server error', error: err });
+  }
+});
 
 
 
