@@ -40,6 +40,13 @@ async function run() {
       res.send(result);
     })
 
+    app.get('/users/:email',async(req, res)=>{
+      const {email} = req.params;
+      const query = {email}
+      const result = await usersCollection.findOne(query);
+      res.send(result);
+    })
+
      
     app.post('/users',async(req, res)=>{
       const user = req.body;
@@ -52,14 +59,35 @@ async function run() {
       res.send(result);
     })
 
+    app.patch('/users/:email', async (req, res) => {
+      const { email } = req.params;
+      const {  resource } = req.body;
+       
+
+      try {
+          const filter = { email };
+          const update = { $push: { ["myContribution"]: resource } };
+          const result = await usersCollection.updateOne(filter, update);
+          console.log(result)
+          if (result.matchedCount === 0) {
+              return res.status(404).send({ message: 'user not found' });
+          }
+  
+          
+          res.send({ message: 'Resource added successfully', result });
+      } catch (err) {
+          res.status(500).send({ message: 'Internal server error', error: err });
+      }
+  });
+  
+
+
+
     //course Update CSE
     app.patch('/courses/:courseCode', async (req, res) => {
       const { courseCode } = req.params;
       const { contentType, resource } = req.body;
-      console.log(contentType);
-      console.log(resource);
-      console.log(courseCode);
-
+    
   
       if (!['Playlist', 'Note', 'questionBank', 'other'].includes(contentType)) {
           return res.status(400).send({ message: 'Invalid Content Name' });
@@ -74,14 +102,18 @@ async function run() {
               return res.status(404).send({ message: 'Course not found' });
           }
   
-          const updatedCourse = await courseCollection.findOne(filter);
-          res.send({ message: 'Resource added successfully', course: updatedCourse });
+          
+          res.send({ message: 'Resource added successfully', result });
       } catch (err) {
           res.status(500).send({ message: 'Internal server error', error: err });
       }
   });
   
    
+  app.get('/cseCourses',async(req, res) => {
+    const result= await courseCollection.find().toArray();
+   res.send(result);
+  })
 
 
  
