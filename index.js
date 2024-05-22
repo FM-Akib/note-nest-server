@@ -12,7 +12,7 @@ app.use(express.json());
 
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion,ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_User}:${process.env.DB_Pass}@cluster0.245gucn.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -103,25 +103,29 @@ async function run() {
 
 
 //toooodoooooooooo: Problem -----------------------------------
-
-app.delete('/users/bookmark/:email', async (req, res) => {
-  const { email } = req.params;
-  const { resourceId } = req.body; // Assuming you have a unique identifier for the resource
+app.delete('/users/:email/bookmarks/:id', async (req, res) => {
+  const email = req.params.email;
+  const bookmarkId = req.params.id;
+  console.log(email, bookmarkId);
 
   try {
-      const filter = { email };
-      const update = { $pull: { bookmarked: { id: resourceId } } }; // Remove the matching bookmark
-      const result = await usersCollection.deleteOne(filter, update);
+      const result = await usersCollection.updateOne(
+          { email: email },
+          { $pull: { bookmarked: { id: bookmarkId } } }
+      );
 
-      // if (result.matchedCount === 0) {
-      //     return res.status(404).send({ message: 'User not found' });
-      // }
+      if (result.modifiedCount === 0) {
+          return res.status(404).send({ message: 'Bookmark not found or already deleted' });
+      }
 
-      // res.send({ message: 'Resource deleted from bookmarks successfully', result });
-  } catch (err) {
-      res.status(500).send({ message: 'Internal server error', error: err });
+      res.send({ message: 'Bookmark deleted successfully',result });
+  } catch (error) {
+      console.error('Error deleting bookmark:', error);
+      res.status(500).send({ message: 'An error occurred', error });
   }
 });
+
+
 
 
 
