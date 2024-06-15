@@ -33,16 +33,17 @@ async function run() {
    const usersCollection = await client.db('iiucResources').collection("users");
    const courseCollection = await client.db('iiucResources').collection("cseCourse");
    const clubsCollection = await client.db('iiucResources').collection("clubs");
+   const componentsCollection = await client.db('iiucResources').collection("components");
 
 
-    //users======================================================================================
+    //users============================================================================================================
     // all user data
     app.get('/users',async(req, res)=>{
       const result = await usersCollection.find().toArray();
       res.send(result);
     })
 
-    //  a user data
+    //  getting a user data
     app.get('/users/:email',async(req, res)=>{
       const {email} = req.params;
       const query = {email}
@@ -163,9 +164,41 @@ app.delete('/users/:email/bookmarks/:id', async (req, res) => {
 
 
 
+ //Project Components ===================================================================================================================
+
+    //add project components to user profile
+    app.patch('/users/components/:email', async (req, res) => {
+      const { email } = req.params;
+      const {  components } = req.body;
+       
+
+      try {
+          const filter = { email };
+          const update = { $push: { ["components"]: components } };
+          const result = await usersCollection.updateOne(filter, update);
+          // console.log(result)
+          if (result.matchedCount === 0) {
+              return res.status(404).send({ message: 'user not found' });
+          }
+  
+          
+          res.send({ message: 'Components added successfully', result });
+      } catch (err) {
+          res.status(500).send({ message: 'Internal server error', error: err });
+      }
+  }); 
 
 
-    //course Update CSE=========================================================================
+//add project components to components database
+  app.post('/components',async(req, res)=>{
+    const {components} = req.body;
+    const result = await componentsCollection.insertOne(components);
+    res.send(result);
+  })
+
+
+
+    //course Update CSE=================================================================================================================
     app.patch('/courses/:courseCode', async (req, res) => {
       const { courseCode } = req.params;
       const { contentType, resource } = req.body;
@@ -239,7 +272,7 @@ app.patch('/courses/:courseCode/resources/:resourceId', async (req, res) => {
 
 
 
-  // Clubs ====================================================================================
+  // Clubs ========================================================================================================================
 
   app.get('/clubs',async(req, res) => {
     const result= await clubsCollection.find().toArray();
