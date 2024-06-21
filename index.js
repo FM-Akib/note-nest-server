@@ -196,6 +196,12 @@ app.delete('/users/:email/bookmarks/:id', async (req, res) => {
     res.send(result);
   })
 
+//Get all componets 
+  app.get('/components',async(req, res) => {
+    const result= await componentsCollection.find().toArray();
+    res.send(result);
+  })
+
 
 
     //course Update CSE=================================================================================================================
