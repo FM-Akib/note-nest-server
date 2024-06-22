@@ -164,7 +164,7 @@ app.delete('/users/:email/bookmarks/:id', async (req, res) => {
 
 
 
- //Project Components ===================================================================================================================
+//Project Components ===================================================================================================================
 
     //add project components to user profile
     app.patch('/users/components/:email', async (req, res) => {
@@ -204,8 +204,49 @@ app.delete('/users/:email/bookmarks/:id', async (req, res) => {
 
 
 
-    //course Update CSE=================================================================================================================
-    app.patch('/courses/:courseCode', async (req, res) => {
+    
+  //  a user edit his/her project components data
+  
+  app.patch('/users/:email/components/:id', async (req, res) => {
+    const contributionId = req.params.id;
+    const { resource } = req.body;
+    const filter = {id: contributionId}
+    const updated = {
+      $set: {
+        id: resource.id,
+        title: resource.title,
+        contact: resource.contact,
+        price: resource.price,
+        sale: resource.sale,
+        projectImg: resource.projectImg,
+        description: resource.description,
+        authorName: resource.authorName,
+        authorImg: resource.authorImg,
+      }
+    }
+ console.log(updated)
+    try {
+      const result = await componentsCollection.updateOne(filter,updated);
+  
+      if (result.modifiedCount === 0) {
+        return res.status(404).send({ message: 'Components not found or already updated' });
+      }
+  
+      res.send({ message: 'Updated successfully', result });
+    } catch (error) {
+      console.error('Error updating:', error);
+      res.status(500).send({ message: 'An error occurred', error });
+    }
+  });
+
+
+
+
+
+
+//course Update CSE=================================================================================================================
+
+app.patch('/courses/:courseCode', async (req, res) => {
       const { courseCode } = req.params;
       const { contentType, resource } = req.body;
     
