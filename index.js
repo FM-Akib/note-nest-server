@@ -332,6 +332,61 @@ app.patch('/courses/:courseCode/resources/:resourceId', async (req, res) => {
 
 
 
+
+
+//LIkes Integrated Here ===========================================================================================================
+
+  
+// Add this to your server routes
+app.post('/courses/:courseCode/playlists/:playlistId/like', async (req, res) => {
+  const { courseCode, playlistId } = req.params;
+  const userEmail = req.body.email;
+  
+  try {
+    const result = await courseCollection.updateOne(
+      { 'courseCode': courseCode, 'Playlist.id': playlistId },
+      { 
+        $addToSet: { 'Playlist.$.likes': userEmail },
+        $inc: { 'Playlist.$.star': 1 }
+      }
+    );
+    res.send(result);
+  } catch (error) {
+    res.status(500).send({ message: 'An error occurred', error });
+  }
+});
+
+app.delete('/courses/:courseCode/playlists/:playlistId/unlike', async (req, res) => {
+  const { courseCode, playlistId } = req.params;
+  const userEmail = req.body.email;
+
+  try {
+    const result = await courseCollection.updateOne(
+      { 'courseCode': courseCode, 'Playlist.id': playlistId },
+      { 
+        $pull: { 'Playlist.$.likes': userEmail },
+        $inc: { 'Playlist.$.star': -1 }
+      }
+    );
+    res.send(result);
+  } catch (error) {
+    res.status(500).send({ message: 'An error occurred', error });
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
  
     await client.connect();
     await client.db("admin").command({ ping: 1 });
