@@ -338,16 +338,16 @@ app.patch('/courses/:courseCode/resources/:resourceId', async (req, res) => {
 
   
 // Add this to your server routes
-app.post('/courses/:courseCode/playlists/:playlistId/like', async (req, res) => {
-  const { courseCode, playlistId } = req.params;
+app.post('/courses/:courseCode/:contentType/:playlistId/like', async (req, res) => {
+  const { courseCode,contentType, playlistId } = req.params;
   const userEmail = req.body.email;
-  
+  // console.log(courseCode,contentType, playlistId )
   try {
     const result = await courseCollection.updateOne(
-      { 'courseCode': courseCode, 'Playlist.id': playlistId },
+      { 'courseCode': courseCode, [`${contentType}.id`]: playlistId },
       { 
-        $addToSet: { 'Playlist.$.likes': userEmail },
-        $inc: { 'Playlist.$.star': 1 }
+        $addToSet: { [`${contentType}.$.likes`]: userEmail },
+        $inc: { [`${contentType}.$.star`]: 1 }
       }
     );
   //user profile 
@@ -366,16 +366,16 @@ app.post('/courses/:courseCode/playlists/:playlistId/like', async (req, res) => 
   }  
 });
 
-app.delete('/courses/:courseCode/playlists/:playlistId/unlike', async (req, res) => {
-  const { courseCode, playlistId } = req.params;
+app.delete('/courses/:courseCode/:contentType/:playlistId/unlike', async (req, res) => {
+  const { courseCode,contentType, playlistId } = req.params;
   const userEmail = req.body.email;
 
   try {
     const result = await courseCollection.updateOne(
-      { 'courseCode': courseCode, 'Playlist.id': playlistId },
+      { 'courseCode': courseCode, [`${contentType}.id`]: playlistId },
       { 
-        $pull: { 'Playlist.$.likes': userEmail },
-        $inc: { 'Playlist.$.star': -1 }
+        $pull: { [`${contentType}.$.likes`]: userEmail },
+        $inc: { [`${contentType}.$.star`]: -1 }
       }
     );
     
