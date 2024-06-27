@@ -350,10 +350,20 @@ app.post('/courses/:courseCode/playlists/:playlistId/like', async (req, res) => 
         $inc: { 'Playlist.$.star': 1 }
       }
     );
-    res.send(result);
+  //user profile 
+    const result2 = await usersCollection.updateOne(
+      { 'email': userEmail, 'myContribution.id': playlistId },
+      { 
+        $addToSet: { 'myContribution.$.likes': userEmail },
+        $inc: { 'myContribution.$.star': 1 }
+      }
+    );
+    res.send({result,result2});
+
+
   } catch (error) {
     res.status(500).send({ message: 'An error occurred', error });
-  }
+  }  
 });
 
 app.delete('/courses/:courseCode/playlists/:playlistId/unlike', async (req, res) => {
@@ -368,7 +378,17 @@ app.delete('/courses/:courseCode/playlists/:playlistId/unlike', async (req, res)
         $inc: { 'Playlist.$.star': -1 }
       }
     );
-    res.send(result);
+    
+    const result2 = await usersCollection.updateOne(
+      { 'email': userEmail, 'myContribution.id': playlistId  },
+      { 
+        $pull: { 'myContribution.$.likes': userEmail },
+        $inc: { 'myContribution.$.star': -1 }
+      }
+    );
+
+
+    res.send({result,result2});
   } catch (error) {
     res.status(500).send({ message: 'An error occurred', error });
   }
@@ -388,8 +408,8 @@ app.delete('/courses/:courseCode/playlists/:playlistId/unlike', async (req, res)
 
 
  
-    await client.connect();
-    await client.db("admin").command({ ping: 1 });
+  await client.connect();
+  await client.db("admin").command({ ping: 1 });
 
   } finally {
     // await client.close();
