@@ -341,6 +341,7 @@ app.patch('/courses/:courseCode/resources/:resourceId', async (req, res) => {
 app.post('/courses/:courseCode/:contentType/:playlistId/like', async (req, res) => {
   const { courseCode,contentType, playlistId } = req.params;
   const userEmail = req.body.email;
+  const authorEmail = req.body.authorEmail;
   // console.log(courseCode,contentType, playlistId )
   try {
     const result = await courseCollection.updateOne(
@@ -352,7 +353,7 @@ app.post('/courses/:courseCode/:contentType/:playlistId/like', async (req, res) 
     );
   //user profile 
     const result2 = await usersCollection.updateOne(
-      { 'email': userEmail, 'myContribution.id': playlistId },
+      { 'email': authorEmail, ['myContribution.id']: playlistId },
       { 
         $addToSet: { 'myContribution.$.likes': userEmail },
         $inc: { 'myContribution.$.star': 1 }
@@ -369,6 +370,7 @@ app.post('/courses/:courseCode/:contentType/:playlistId/like', async (req, res) 
 app.delete('/courses/:courseCode/:contentType/:playlistId/unlike', async (req, res) => {
   const { courseCode,contentType, playlistId } = req.params;
   const userEmail = req.body.email;
+  const authorEmail = req.body.authorEmail;
 
   try {
     const result = await courseCollection.updateOne(
@@ -380,7 +382,7 @@ app.delete('/courses/:courseCode/:contentType/:playlistId/unlike', async (req, r
     );
     
     const result2 = await usersCollection.updateOne(
-      { 'email': userEmail, 'myContribution.id': playlistId  },
+      { 'email': authorEmail, ['myContribution.id']: playlistId  },
       { 
         $pull: { 'myContribution.$.likes': userEmail },
         $inc: { 'myContribution.$.star': -1 }
