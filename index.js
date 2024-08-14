@@ -36,6 +36,10 @@ async function run() {
    const componentsCollection = await client.db('iiucResources').collection("components");
 
 
+   const courseCollectionEee = await client.db('iiucResources').collection("eeeCourse");
+
+
+
     //users============================================================================================================
     // all user data
     app.get('/users',async(req, res)=>{
@@ -314,6 +318,81 @@ app.patch('/courses/:courseCode/resources/:resourceId', async (req, res) => {
     const result= await courseCollection.find().toArray();
    res.send(result);
   })
+
+
+  //EEE    ========================================================================================================================
+
+  app.get('/eeeCourses',async(req, res) => {
+    const result= await courseCollectionEee.find().toArray();
+   res.send(result);
+  })
+   
+
+
+  app.patch('/coursesEee/:courseCode', async (req, res) => {
+    const { courseCode } = req.params;
+    const { contentType, resource } = req.body;
+  
+
+    if (!['Playlist', 'Note', 'questionBank', 'other'].includes(contentType)) {
+        return res.status(400).send({ message: 'Invalid Content Name' });
+    }
+
+    try {
+        const filter = { courseCode };
+        const update = { $push: { [contentType]: resource } };
+        const result = await courseCollectionEee.updateOne(filter, update);
+
+        if (result.matchedCount === 0) {
+            return res.status(404).send({ message: 'Course not found' });
+        }
+
+        
+        res.send({ message: 'Resource added successfully', result });
+    } catch (err) {
+        res.status(500).send({ message: 'Internal server error', error: err });
+    }
+});
+
+
+
+
+ 
+//edit course details with users
+app.patch('/coursesEee/:courseCode/resources/:resourceId', async (req, res) => {
+const { courseCode, resourceId } = req.params;
+const {  contentType, resource } = req.body;
+
+if (!['Playlist', 'Note', 'questionBank', 'other'].includes(contentType)) {
+    return res.status(400).send({ message: 'Invalid Content Name' });
+}
+
+try {
+    const filter = {
+        courseCode,
+        [`${contentType}.id`]: resourceId,
+        
+    };
+    const update = {
+        $set: {
+            [`${contentType}.$`]: resource
+        }
+    };
+    const result = await courseCollectionEee.updateOne(filter, update);
+
+    if (result.matchedCount === 0) {
+        return res.status(404).send({ message: 'Resource or course not found' });
+    }
+
+    res.send({ message: 'Resource updated successfully', result });
+} catch (err) {
+    res.status(500).send({ message: 'Internal server error', error: err });
+}
+});
+
+
+
+
 
 
 
