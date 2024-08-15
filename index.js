@@ -501,7 +501,7 @@ app.post('/courses/:courseCode/:contentType/:playlistId/like', async (req, res) 
   const { courseCode,contentType, playlistId } = req.params;
   const userEmail = req.body.email;
   const authorEmail = req.body.authorEmail;
-  // console.log(courseCode,contentType, playlistId )
+ 
   try {
     const result = await courseCollection.updateOne(
       { 'courseCode': courseCode, [`${contentType}.id`]: playlistId },
@@ -554,6 +554,147 @@ app.delete('/courses/:courseCode/:contentType/:playlistId/unlike', async (req, r
     res.status(500).send({ message: 'An error occurred', error });
   }
 });
+
+
+
+
+
+
+//LIkes Integrated Here EEE ===========================================================================================================
+
+  
+// Add this to your server routes
+app.post('/coursesEEE/:courseCode/:contentType/:playlistId/like', async (req, res) => {
+  const { courseCode,contentType, playlistId } = req.params;
+  const userEmail = req.body.email;
+  const authorEmail = req.body.authorEmail;
+ 
+  try {
+    const result = await courseCollectionEee.updateOne(
+      { 'courseCode': courseCode, [`${contentType}.id`]: playlistId },
+      { 
+        $addToSet: { [`${contentType}.$.likes`]: userEmail },
+        $inc: { [`${contentType}.$.star`]: 1 }
+      }
+    );
+  //user profile 
+    const result2 = await usersCollection.updateOne(
+      { 'email': authorEmail, ['myContribution.id']: playlistId },
+      { 
+        $addToSet: { 'myContribution.$.likes': userEmail },
+        $inc: { 'myContribution.$.star': 1 }
+      }
+    );
+    res.send({result,result2});
+
+
+  } catch (error) {
+    res.status(500).send({ message: 'An error occurred', error });
+  }  
+});
+
+app.delete('/coursesEEE/:courseCode/:contentType/:playlistId/unlike', async (req, res) => {
+  const { courseCode,contentType, playlistId } = req.params;
+  const userEmail = req.body.email;
+  const authorEmail = req.body.authorEmail;
+
+  try {
+    const result = await courseCollectionEee.updateOne(
+      { 'courseCode': courseCode, [`${contentType}.id`]: playlistId },
+      { 
+        $pull: { [`${contentType}.$.likes`]: userEmail },
+        $inc: { [`${contentType}.$.star`]: -1 }
+      }
+    );
+    
+    const result2 = await usersCollection.updateOne(
+      { 'email': authorEmail, ['myContribution.id']: playlistId  },
+      { 
+        $pull: { 'myContribution.$.likes': userEmail },
+        $inc: { 'myContribution.$.star': -1 }
+      }
+    );
+
+
+    res.send({result,result2});
+  } catch (error) {
+    res.status(500).send({ message: 'An error occurred', error });
+  }
+});
+
+
+
+
+
+
+
+
+
+//LIkes Integrated Here Pharmacy ===========================================================================================================
+
+  
+// Add this to your server routes
+app.post('/coursesPharma/:courseCode/:contentType/:playlistId/like', async (req, res) => {
+  const { courseCode,contentType, playlistId } = req.params;
+  const userEmail = req.body.email;
+  const authorEmail = req.body.authorEmail;
+ 
+  try {
+    const result = await courseCollectionPharma.updateOne(
+      { 'courseCode': courseCode, [`${contentType}.id`]: playlistId },
+      { 
+        $addToSet: { [`${contentType}.$.likes`]: userEmail },
+        $inc: { [`${contentType}.$.star`]: 1 }
+      }
+    );
+  //user profile 
+    const result2 = await usersCollection.updateOne(
+      { 'email': authorEmail, ['myContribution.id']: playlistId },
+      { 
+        $addToSet: { 'myContribution.$.likes': userEmail },
+        $inc: { 'myContribution.$.star': 1 }
+      }
+    );
+    res.send({result,result2});
+
+
+  } catch (error) {
+    res.status(500).send({ message: 'An error occurred', error });
+  }  
+});
+
+app.delete('/coursesPharma/:courseCode/:contentType/:playlistId/unlike', async (req, res) => {
+  const { courseCode,contentType, playlistId } = req.params;
+  const userEmail = req.body.email;
+  const authorEmail = req.body.authorEmail;
+
+  try {
+    const result = await courseCollectionPharma.updateOne(
+      { 'courseCode': courseCode, [`${contentType}.id`]: playlistId },
+      { 
+        $pull: { [`${contentType}.$.likes`]: userEmail },
+        $inc: { [`${contentType}.$.star`]: -1 }
+      }
+    );
+    
+    const result2 = await usersCollection.updateOne(
+      { 'email': authorEmail, ['myContribution.id']: playlistId  },
+      { 
+        $pull: { 'myContribution.$.likes': userEmail },
+        $inc: { 'myContribution.$.star': -1 }
+      }
+    );
+
+
+    res.send({result,result2});
+  } catch (error) {
+    res.status(500).send({ message: 'An error occurred', error });
+  }
+});
+
+
+
+
 
 
 
