@@ -37,6 +37,7 @@ async function run() {
 
 
    const courseCollectionEee = await client.db('iiucResources').collection("eeeCourse");
+   const courseCollectionPharma = await client.db('iiucResources').collection("pharmaCourse");
 
 
 
@@ -379,6 +380,85 @@ try {
         }
     };
     const result = await courseCollectionEee.updateOne(filter, update);
+
+    if (result.matchedCount === 0) {
+        return res.status(404).send({ message: 'Resource or course not found' });
+    }
+
+    res.send({ message: 'Resource updated successfully', result });
+} catch (err) {
+    res.status(500).send({ message: 'Internal server error', error: err });
+}
+});
+
+
+
+
+
+
+
+
+  // Pharmacy Department =========================================================================================================
+
+   
+
+  app.get('/pharmaCourses',async(req, res) => {
+    const result= await courseCollectionPharma.find().toArray();
+   res.send(result);
+  })
+   
+
+
+  app.patch('/coursesPharma/:courseCode', async (req, res) => {
+    const { courseCode } = req.params;
+    const { contentType, resource } = req.body;
+  
+
+    if (!['Playlist', 'Note', 'questionBank', 'other'].includes(contentType)) {
+        return res.status(400).send({ message: 'Invalid Content Name' });
+    }
+
+    try {
+        const filter = { courseCode };
+        const update = { $push: { [contentType]: resource } };
+        const result = await courseCollectionPharma.updateOne(filter, update);
+
+        if (result.matchedCount === 0) {
+            return res.status(404).send({ message: 'Course not found' });
+        }
+
+        
+        res.send({ message: 'Resource added successfully', result });
+    } catch (err) {
+        res.status(500).send({ message: 'Internal server error', error: err });
+    }
+});
+
+
+
+
+ 
+//edit course details with users
+app.patch('/coursesPharma/:courseCode/resources/:resourceId', async (req, res) => {
+const { courseCode, resourceId } = req.params;
+const {  contentType, resource } = req.body;
+
+if (!['Playlist', 'Note', 'questionBank', 'other'].includes(contentType)) {
+    return res.status(400).send({ message: 'Invalid Content Name' });
+}
+
+try {
+    const filter = {
+        courseCode,
+        [`${contentType}.id`]: resourceId,
+        
+    };
+    const update = {
+        $set: {
+            [`${contentType}.$`]: resource
+        }
+    };
+    const result = await courseCollectionPharma.updateOne(filter, update);
 
     if (result.matchedCount === 0) {
         return res.status(404).send({ message: 'Resource or course not found' });
